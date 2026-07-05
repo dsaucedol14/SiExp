@@ -38,6 +38,20 @@ python main.py --fuente archivo --datos datos/noche_helada.json --parte-baja
 python main.py --fuente archivo --datos datos/noche_helada.json
 ```
 
+### Reporte HTML (para la defensa)
+
+Agrega `--html` para generar un reporte visual autocontenido (un solo
+archivo, con gráficas SVG; no requiere internet ni librerías):
+
+```bash
+python main.py --datos datos/noche_helada.json --parte-baja --html reporte_heladas.html
+```
+
+Se genera `reporte_heladas.html`; ábrelo con doble clic. Incluye el
+veredicto de la noche, la gráfica de temperatura vs. punto de rocío, la
+evolución del riesgo por hora, la tabla horaria y la justificación
+regla por regla del momento de mayor riesgo.
+
 ## Las dos rutas de datos (flag `--fuente`)
 
 | Ruta | Uso | Robustez |

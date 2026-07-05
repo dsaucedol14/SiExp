@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alerta de Heladas &mdash; Huauchinango, Puebla</title>
+<style>
+  :root { --tinta:#2c3e50; --suave:#7f8c8d; --linea:#ecf0f1; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+          color:var(--tinta); background:#f4f6f8; padding:24px; }
+  .contenedor { max-width:900px; margin:0 auto; }
+  header h1 { margin:0 0 4px; font-size:22px; }
+  header p { margin:0; color:var(--suave); font-size:13px; }
+  .veredicto { background:#c0392b; color:#fff; border-radius:14px;
+                padding:22px 26px; margin:20px 0; display:flex;
+                align-items:center; justify-content:space-between;
+                flex-wrap:wrap; gap:12px; box-shadow:0 6px 18px rgba(0,0,0,.12); }
+  .veredicto .nivel { font-size:30px; font-weight:800; letter-spacing:1px; }
+  .veredicto .cf { font-size:14px; opacity:.9; }
+  .veredicto .accion { max-width:340px; font-size:14px; line-height:1.4; }
+  .tarjeta { background:#fff; border-radius:12px; padding:20px 24px;
+              margin:16px 0; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+  .tarjeta h2 { margin:0 0 12px; font-size:15px; text-transform:uppercase;
+                 letter-spacing:.5px; color:var(--suave); }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { padding:7px 10px; text-align:center; border-bottom:1px solid var(--linea); }
+  th { color:var(--suave); font-weight:600; text-transform:uppercase;
+        font-size:11px; }
+  ul { margin:0; padding-left:20px; line-height:1.9; font-size:14px; }
+  .chips { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+  .chip { background:var(--linea); border-radius:20px; padding:5px 12px;
+           font-size:12px; color:var(--tinta); }
+  footer { color:var(--suave); font-size:11px; text-align:center;
+            margin-top:24px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div class="contenedor">
+
+  <header>
+    <h1>Sistema Experto de Alerta de Heladas Radiativas</h1>
+    <p>Produccion de manzana &middot; Huauchinango, Puebla
+       &middot; Noche del 2025-12-10
+       &middot; Metodo: factores de certeza (MYCIN)</p>
+  </header>
+
+  <div class="veredicto">
+    <div>
+      <div class="nivel">CRITICA</div>
+      <div class="cf">CF = +0.99 &middot; mayor riesgo a las 03:00 h</div>
+    </div>
+    <div class="accion"><strong>Accion:</strong> Activar riego por aspersion / calentadores y alarma nocturna</div>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Temperatura y punto de rocio durante la noche</h2>
+    <svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:sans-serif"><line x1="55" y1="279.6" x2="800" y2="279.6" stroke="#eee"/><text x="47" y="283.6" text-anchor="end" font-size="11" fill="#888">-6</text><line x1="55" y1="252.3" x2="800" y2="252.3" stroke="#eee"/><text x="47" y="256.3" text-anchor="end" font-size="11" fill="#888">-4</text><line x1="55" y1="224.9" x2="800" y2="224.9" stroke="#eee"/><text x="47" y="228.9" text-anchor="end" font-size="11" fill="#888">-2</text><line x1="55" y1="197.6" x2="800" y2="197.6" stroke="#eee"/><text x="47" y="201.6" text-anchor="end" font-size="11" fill="#888">0</text><line x1="55" y1="170.3" x2="800" y2="170.3" stroke="#eee"/><text x="47" y="174.3" text-anchor="end" font-size="11" fill="#888">2</text><line x1="55" y1="143.0" x2="800" y2="143.0" stroke="#eee"/><text x="47" y="147.0" text-anchor="end" font-size="11" fill="#888">4</text><line x1="55" y1="115.6" x2="800" y2="115.6" stroke="#eee"/><text x="47" y="119.6" text-anchor="end" font-size="11" fill="#888">6</text><line x1="55" y1="88.3" x2="800" y2="88.3" stroke="#eee"/><text x="47" y="92.3" text-anchor="end" font-size="11" fill="#888">8</text><line x1="55" y1="61.0" x2="800" y2="61.0" stroke="#eee"/><text x="47" y="65.0" text-anchor="end" font-size="11" fill="#888">10</text><line x1="55" y1="33.7" x2="800" y2="33.7" stroke="#eee"/><text x="47" y="37.7" text-anchor="end" font-size="11" fill="#888">12</text><rect x="55" y="197.6" width="745" height="57.4" fill="#c0392b" opacity="0.06"/><line x1="55" y1="197.6" x2="800" y2="197.6" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="4 3"/><text x="796" y="192.6" text-anchor="end" font-size="10" fill="#c0392b">0 C</text><text x="55.0" y="273" text-anchor="middle" font-size="10" fill="#888">18</text><text x="108.2" y="273" text-anchor="middle" font-size="10" fill="#888">19</text><text x="161.4" y="273" text-anchor="middle" font-size="10" fill="#888">20</text><text x="214.6" y="273" text-anchor="middle" font-size="10" fill="#888">21</text><text x="267.9" y="273" text-anchor="middle" font-size="10" fill="#888">22</text><text x="321.1" y="273" text-anchor="middle" font-size="10" fill="#888">23</text><text x="374.3" y="273" text-anchor="middle" font-size="10" fill="#888">00</text><text x="427.5" y="273" text-anchor="middle" font-size="10" fill="#888">01</text><text x="480.7" y="273" text-anchor="middle" font-size="10" fill="#888">02</text><text x="533.9" y="273" text-anchor="middle" font-size="10" fill="#888">03</text><text x="587.1" y="273" text-anchor="middle" font-size="10" fill="#888">04</text><text x="640.4" y="273" text-anchor="middle" font-size="10" fill="#888">05</text><text x="693.6" y="273" text-anchor="middle" font-size="10" fill="#888">06</text><text x="746.8" y="273" text-anchor="middle" font-size="10" fill="#888">07</text><text x="800.0" y="273" text-anchor="middle" font-size="10" fill="#888">08</text><polyline points="55.0,164.8 108.2,181.2 161.4,194.9 214.6,201.7 267.9,211.3 321.1,214.0 374.3,216.7 427.5,220.8 480.7,224.9 533.9,230.4 587.1,237.2 640.4,241.3 693.6,241.3 746.8,234.5 800.0,216.7" fill="none" stroke="#2980b9" stroke-width="2" stroke-dasharray="5 4"/><polyline points="55.0,33.7 108.2,67.8 161.4,95.1 214.6,122.5 267.9,143.0 321.1,156.6 374.3,170.3 427.5,181.2 480.7,192.2 533.9,201.7 587.1,211.3 640.4,218.1 693.6,215.4 746.8,201.7 800.0,170.3" fill="none" stroke="#e67e22" stroke-width="2.5"/><circle cx="55.0" cy="33.7" r="2.5" fill="#e67e22"/><circle cx="108.2" cy="67.8" r="2.5" fill="#e67e22"/><circle cx="161.4" cy="95.1" r="2.5" fill="#e67e22"/><circle cx="214.6" cy="122.5" r="2.5" fill="#e67e22"/><circle cx="267.9" cy="143.0" r="2.5" fill="#e67e22"/><circle cx="321.1" cy="156.6" r="2.5" fill="#e67e22"/><circle cx="374.3" cy="170.3" r="2.5" fill="#e67e22"/><circle cx="427.5" cy="181.2" r="2.5" fill="#e67e22"/><circle cx="480.7" cy="192.2" r="2.5" fill="#e67e22"/><circle cx="533.9" cy="201.7" r="2.5" fill="#e67e22"/><circle cx="587.1" cy="211.3" r="2.5" fill="#e67e22"/><circle cx="640.4" cy="218.1" r="2.5" fill="#e67e22"/><circle cx="693.6" cy="215.4" r="2.5" fill="#e67e22"/><circle cx="746.8" cy="201.7" r="2.5" fill="#e67e22"/><circle cx="800.0" cy="170.3" r="2.5" fill="#e67e22"/><rect x="63" y="26" width="14" height="3" fill="#e67e22"/><text x="81" y="32" font-size="11" fill="#555">Temperatura</text><line x1="175" y1="28" x2="189" y2="28" stroke="#2980b9" stroke-width="2" stroke-dasharray="5 4"/><text x="195" y="32" font-size="11" fill="#555">Punto de rocio</text></svg>
+    <p style="font-size:12.5px;color:var(--suave);margin:10px 0 0">
+      En noche despejada y en calma, la temperatura minima tiende al punto
+      de rocio (linea azul). Cuando este cae bajo 0&nbsp;C, hay riesgo de helada.</p>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Evolucion del nivel de riesgo (factor de certeza por hora)</h2>
+    <svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:sans-serif"><line x1="55" y1="49.2" x2="800" y2="49.2" stroke="#ddd" stroke-dasharray="3 3"/><text x="47" y="53.2" text-anchor="end" font-size="10" fill="#aaa">0.70</text><line x1="55" y1="78.5" x2="800" y2="78.5" stroke="#ddd" stroke-dasharray="3 3"/><text x="47" y="82.5" text-anchor="end" font-size="10" fill="#aaa">0.40</text><line x1="55" y1="102.9" x2="800" y2="102.9" stroke="#ddd" stroke-dasharray="3 3"/><text x="47" y="106.9" text-anchor="end" font-size="10" fill="#aaa">0.15</text><line x1="55" y1="117.5" x2="800" y2="117.5" stroke="#ddd" stroke-dasharray="3 3"/><rect x="62.4" y="117.5" width="34.8" height="64.7" fill="#27ae60" opacity="0.9"><title>18:00 CF=-0.66 NULO</title></rect><text x="79.8" y="233" text-anchor="middle" font-size="10" fill="#888">18</text><rect x="112.1" y="54.9" width="34.8" height="62.6" fill="#e67e22" opacity="0.9"><title>19:00 CF=+0.64 ALERTA</title></rect><text x="129.5" y="233" text-anchor="middle" font-size="10" fill="#888">19</text><rect x="161.8" y="54.9" width="34.8" height="62.6" fill="#e67e22" opacity="0.9"><title>20:00 CF=+0.64 ALERTA</title></rect><text x="179.2" y="233" text-anchor="middle" font-size="10" fill="#888">20</text><rect x="211.5" y="21.1" width="34.8" height="96.4" fill="#c0392b" opacity="0.9"><title>21:00 CF=+0.99 CRITICA</title></rect><text x="228.8" y="233" text-anchor="middle" font-size="10" fill="#888">21</text><rect x="261.1" y="21.1" width="34.8" height="96.4" fill="#c0392b" opacity="0.9"><title>22:00 CF=+0.99 CRITICA</title></rect><text x="278.5" y="233" text-anchor="middle" font-size="10" fill="#888">22</text><rect x="310.8" y="21.1" width="34.8" height="96.4" fill="#c0392b" opacity="0.9"><title>23:00 CF=+0.99 CRITICA</title></rect><text x="328.2" y="233" text-anchor="middle" font-size="10" fill="#888">23</text><rect x="360.5" y="21.1" width="34.8" height="96.4" fill="#c0392b" opacity="0.9"><title>00:00 CF=+0.99 CRITICA</title></rect><text x="377.8" y="233" text-anchor="middle" font-size="10" fill="#888">00</text><rect x="410.1" y="21.1" width="34.8" height="96.4" fill="#c0392b" opacity="0.9"><title>01:00 CF=+0.99 CRITICA</title></rect><text x="427.5" y="233" text-anchor="middle" font-size="10" fill="#888">01</text><rect x="459.8" y="21.1" width="34.8" height="96.4" fill="#c0392b" opacity="0.9"><title>02:00 CF=+0.99 CRITICA</title></rect><text x="477.2" y="233" text-anchor="middle" font-size="10" fill="#888">02</text><rect x="509.4" y="20.5" width="34.8" height="97.0" fill="#c0392b" opacity="0.9"><title>03:00 CF=+0.99 CRITICA</title></rect><text x="526.8" y="233" text-anchor="middle" font-size="10" fill="#888">03</text><rect x="559.1" y="20.5" width="34.8" height="97.0" fill="#c0392b" opacity="0.9"><title>04:00 CF=+0.99 CRITICA</title></rect><text x="576.5" y="233" text-anchor="middle" font-size="10" fill="#888">04</text><rect x="608.8" y="20.5" width="34.8" height="97.0" fill="#c0392b" opacity="0.9"><title>05:00 CF=+0.99 CRITICA</title></rect><text x="626.2" y="233" text-anchor="middle" font-size="10" fill="#888">05</text><rect x="658.5" y="20.5" width="34.8" height="97.0" fill="#c0392b" opacity="0.9"><title>06:00 CF=+0.99 CRITICA</title></rect><text x="675.8" y="233" text-anchor="middle" font-size="10" fill="#888">06</text><rect x="708.1" y="20.5" width="34.8" height="97.0" fill="#c0392b" opacity="0.9"><title>07:00 CF=+0.99 CRITICA</title></rect><text x="725.5" y="233" text-anchor="middle" font-size="10" fill="#888">07</text><rect x="757.8" y="23.8" width="34.8" height="93.7" fill="#c0392b" opacity="0.9"><title>08:00 CF=+0.96 CRITICA</title></rect><text x="775.2" y="233" text-anchor="middle" font-size="10" fill="#888">08</text><line x1="55" y1="117.5" x2="800" y2="117.5" stroke="#333" stroke-width="1"/></svg>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Detalle horario</h2>
+    <table>
+      <thead><tr>
+        <th>Hora</th><th>T (C)</th><th>Td (C)</th><th>Nubes</th>
+        <th>Viento km/h</th><th>CF</th><th>Nivel</th>
+      </tr></thead>
+      <tbody>
+<tr><td>18:00</td><td>12.0</td><td>2.4</td><td>70%</td><td>16</td><td>-0.66</td><td style="background:#27ae60;color:#fff;font-weight:600">NULO</td></tr>
+<tr><td>19:00</td><td>9.5</td><td>1.2</td><td>50%</td><td>11</td><td>+0.64</td><td style="background:#e67e22;color:#fff;font-weight:600">ALERTA</td></tr>
+<tr><td>20:00</td><td>7.5</td><td>0.2</td><td>35%</td><td>7</td><td>+0.64</td><td style="background:#e67e22;color:#fff;font-weight:600">ALERTA</td></tr>
+<tr><td>21:00</td><td>5.5</td><td>-0.3</td><td>20%</td><td>4</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>22:00</td><td>4.0</td><td>-1.0</td><td>10%</td><td>3</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>23:00</td><td>3.0</td><td>-1.2</td><td>5%</td><td>2</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>00:00</td><td>2.0</td><td>-1.4</td><td>5%</td><td>2</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>01:00</td><td>1.2</td><td>-1.7</td><td>0%</td><td>1</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>02:00</td><td>0.4</td><td>-2.0</td><td>0%</td><td>1</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>03:00</td><td>-0.3</td><td>-2.4</td><td>0%</td><td>1</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>04:00</td><td>-1.0</td><td>-2.9</td><td>5%</td><td>2</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>05:00</td><td>-1.5</td><td>-3.2</td><td>5%</td><td>1</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>06:00</td><td>-1.3</td><td>-3.2</td><td>10%</td><td>2</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>07:00</td><td>-0.3</td><td>-2.7</td><td>20%</td><td>3</td><td>+0.99</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+<tr><td>08:00</td><td>2.0</td><td>-1.4</td><td>30%</td><td>5</td><td>+0.96</td><td style="background:#c0392b;color:#fff;font-weight:600">CRITICA</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="tarjeta">
+    <h2>Justificacion de la inferencia &mdash; momento de mayor riesgo (03:00 h)</h2>
+    <ul>
+<li><span style="color:#27ae60;font-weight:700;font-family:monospace">+0.80</span> <strong>R1</strong> &mdash; Punto de rocio &lt;= 0 C (piso termico bajo cero)</li>
+<li><span style="color:#27ae60;font-weight:700;font-family:monospace">+0.70</span> <strong>R4</strong> &mdash; Cielo despejado (nubosidad &lt;= 25%)</li>
+<li><span style="color:#27ae60;font-weight:700;font-family:monospace">+0.70</span> <strong>R5</strong> &mdash; Viento en calma (&lt;= 5 km/h)</li>
+<li><span style="color:#27ae60;font-weight:700;font-family:monospace">+0.55</span> <strong>R8</strong> &mdash; Madrugada critica (03-07 h y temp &lt;= 4 C)</li>
+<li><span style="color:#27ae60;font-weight:700;font-family:monospace">+0.35</span> <strong>R9</strong> &mdash; Huerto en parte baja / canada (drenaje de aire frio)</li>
+    </ul>
+    <div class="chips">
+      <span class="chip">Td estimado: -2.4 C</span>
+      <span class="chip">Nubosidad: 0%</span>
+      <span class="chip">Viento: 1 km/h</span>
+      <span class="chip">Huerto en parte baja: Si (zona de drenaje de aire frio)</span>
+    </div>
+  </div>
+
+  <footer>
+    Prueba de concepto &middot; Base de conocimiento separada del motor de inferencia.<br>
+    Punto de rocio derivado por la formula de Magnus. Datos con formato del
+    web service del SMN (CONAGUA).
+  </footer>
+
+</div>
+</body>
+</html>

@@ -91,6 +91,9 @@ def main():
                     help="clave de municipio del SMN (fuente=api)")
     ap.add_argument("--parte-baja", action="store_true",
                     help="el huerto esta en zona de drenaje de aire frio (R9)")
+    ap.add_argument("--html", nargs="?", const="reporte_heladas.html",
+                    default=None,
+                    help="genera un reporte HTML (opcional: ruta de salida)")
     args = ap.parse_args()
 
     try:
@@ -111,6 +114,17 @@ def main():
 
     resultados = procesar_noche(hechos)
     imprimir_reporte(resultados)
+
+    if args.html:
+        import reporte_html
+        meta = {
+            "municipio": "Huauchinango, Puebla",
+            "fecha": hechos[0].get("_fecha", "") if hechos else "",
+            "parte_baja": args.parte_baja,
+        }
+        ruta = reporte_html.generar_reporte(resultados, meta, args.html, explicar)
+        print(f" Reporte HTML generado: {ruta}")
+        print(" Abrelo en tu navegador (doble clic o arrastralo a una pestana).\n")
 
 
 if __name__ == "__main__":
