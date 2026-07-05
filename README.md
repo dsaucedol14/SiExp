@@ -1,129 +1,64 @@
-# Sistema Experto de Alerta de Heladas — Manzana, Sierra Norte de Puebla
+# Vela — App móvil de alerta de heladas (PWA)
 
-Prueba de concepto de un **sistema experto** que estima el riesgo de
-**helada radiativa** nocturna en huertos de manzana, usando
-**factores de certeza** (paradigma clásico estilo MYCIN).
+Versión móvil del sistema experto, como **PWA** (Progressive Web App):
+un solo `index.html` autocontenido con toda la lógica de factores de
+certeza en JavaScript. No usa librerías, ni CDN, ni servidor: funciona
+sin conexión.
 
-Consume datos meteorológicos con formato del **web service del SMN
-(CONAGUA)** y razona sobre ellos con una base de conocimiento explícita,
-separada del motor de inferencia.
+## Qué incluye
 
-## Estructura del proyecto
+- **index.html** — la app completa (lógica + interfaz)
+- **manifest.webmanifest** — para instalarla en la pantalla de inicio
+- **sw.js** — service worker (cacheo offline cuando está alojada)
+- **icon-192.png / icon-512.png** — íconos de la app
+- **icono.svg** — fuente vectorial del ícono
 
-```
-sistema_experto_heladas/
-├── motor_cf.py            # Motor de inferencia (combinación de CF, clasificación)
-├── base_conocimiento.py   # Las 13 reglas de helada radiativa con sus CF
-├── adaptador_smn.py       # Traduce el JSON del SMN + calcula punto de rocío (Magnus)
-├── main.py                # Orquestación, CLI y traza de explicación
-├── datos/
-│   └── noche_helada.json  # Una noche de heladas (formato tipo SMN) para la demo
-└── README.md
-```
+## Dos formas de usarla
 
-La separación **motor ↔ base de conocimiento** es intencional: es lo que
-distingue un sistema experto de un bloque de `if/else`. El motor no sabe
-nada de heladas; la base de conocimiento no sabe nada de cómo se combinan
-los factores de certeza.
+### 1. Rápida (para probar y para la demo)
 
-## Cómo ejecutarlo
+Abre `index.html` con doble clic o arrástralo a una pestaña del navegador.
+Funciona igual en la computadora y en el celular. Toda la lógica corre en
+el dispositivo, así que **no necesita internet**.
 
-Requiere solo Python 3 (sin dependencias externas para la ruta `archivo`).
+Tiene dos pestañas:
 
-```bash
-# Demo con la noche cacheada, huerto en parte baja (activa la regla R9)
-python main.py --fuente archivo --datos datos/noche_helada.json --parte-baja
+- **Ahora** — mueve los deslizadores (temperatura, humedad, viento,
+  nubosidad, hora) y el orbe de riesgo se actualiza en vivo, con el punto
+  de rocío derivado y las reglas que se dispararon.
+- **La noche** — carga la noche de ejemplo o pega un JSON horario del SMN
+  para ver la evolución del riesgo hora por hora y el dictamen del pico.
 
-# Sin la heurística de parte baja
-python main.py --fuente archivo --datos datos/noche_helada.json
-```
+### 2. Como app instalable en el celular (PWA real)
 
-### Reporte HTML (para la defensa)
+Para que se instale en la pantalla de inicio y quede 100 % offline con
+service worker, hay que servirla por HTTPS. La vía gratis más simple es
+**GitHub Pages** (ya tienes cuenta de GitHub):
 
-Agrega `--html` para generar un reporte visual autocontenido (un solo
-archivo, con gráficas SVG; no requiere internet ni librerías):
+1. Sube esta carpeta `app_movil` a un repositorio.
+2. En *Settings → Pages*, publica la rama `main`, carpeta raíz.
+3. Abre la URL `https://<usuario>.github.io/<repo>/` en el celular.
+4. En el menú del navegador: **"Agregar a pantalla de inicio"**.
 
-```bash
-python main.py --datos datos/noche_helada.json --parte-baja --html reporte_heladas.html
-```
+Queda como una app con su ícono; al abrirla sin señal, sigue funcionando.
 
-Se genera `reporte_heladas.html`; ábrelo con doble clic. Incluye el
-veredicto de la noche, la gráfica de temperatura vs. punto de rocío, la
-evolución del riesgo por hora, la tabla horaria y la justificación
-regla por regla del momento de mayor riesgo.
+## Nota honesta sobre jalar datos del SMN en vivo
 
-## Las dos rutas de datos (flag `--fuente`)
+La app deja **pegar** el JSON del SMN, que es la vía robusta. Una descarga
+automática en vivo desde el navegador suele chocar con **CORS**: el
+servidor del SMN no autoriza peticiones desde otro origen, y el navegador
+las bloquea por seguridad. Por eso la app se centra en:
 
-| Ruta | Uso | Robustez |
-|------|-----|----------|
-| `archivo` | Lee un JSON del SMN cacheado en disco | **Recomendada para la demo:** no depende de la red al momento de presentar |
-| `api` | Descarga en vivo del SMN | Deshabilitada en la PoC (stub); más vistosa pero frágil |
+- **entrada manual** (pestaña *Ahora*), y
+- **pegar el JSON** que copiaste del SMN (pestaña *La noche*).
 
-La estrategia recomendada: hacer **una** descarga real del SMN, guardarla
-en `datos/`, y reproducirla como “datos simulados”. Los datos son reales y
-verificables, pero la demo nunca falla por el WiFi del salón.
+Si más adelante quieres descarga automática, se resuelve con un pequeño
+backend propio que consulte al SMN y reenvíe el dato a la app — eso ya
+sale del alcance de una PoC de materia.
 
-## Sobre el web service del SMN
+## Relación con la versión de escritorio
 
-El SMN (CONAGUA) publica pronóstico por municipios en **JSON**, actualizado
-aproximadamente cada hora y 15 minutos:
-
-- **Por hora, a 48 h** — el más útil para este sistema (evolución nocturna)
-- **Por día, a 3 días**
-
-Portal del servicio: `https://smn.conagua.gob.mx/` (sección *Web Service /
-Pronóstico por municipios*). Verifica la ruta y el formato vigentes al
-descargar, y localiza la **clave de municipio (`idmun`) de Huauchinango**
-en el catálogo del SMN.
-
-### Importante: verifica los nombres de campo
-
-Los nombres exactos de los campos difieren entre el pronóstico **diario**
-y el **por hora**. Este proyecto mapea los nombres típicos en
-`adaptador_smn.py` → `MAPEO_CAMPOS`:
-
-| Campo SMN | Interno | Significado |
-|-----------|---------|-------------|
-| `temp`    | temperatura | °C |
-| `hr`      | humedad relativa | % |
-| `velvien` | viento | km/h |
-| `cc`      | nubosidad | % |
-| `hloc`    | hora local | hh |
-
-Si tu descarga real usa otras claves, **solo ajusta ese diccionario**: las
-reglas no se enteran.
-
-### NOAA no sirve para este caso
-
-La API pública de NOAA (`api.weather.gov`) solo da pronóstico puntual para
-territorio de EE.UU.; no cubre municipios de México. Sus datos globales
-(modelo GFS) vienen en GRIB, desproporcionado para una PoC. Por eso aquí
-se usa el SMN.
-
-## Cómo razona el sistema (resumen)
-
-1. El **punto de rocío** (derivado con la fórmula de Magnus) es el “piso”
-   térmico: en noche despejada y en calma, la mínima nocturna tiende a él.
-2. Las condiciones **habilitadoras** (cielo despejado, viento en calma)
-   suman evidencia; las **bloqueadoras** (nubes, viento) la restan (CF
-   negativo) para evitar falsas alarmas.
-3. Los factores de certeza se combinan con las fórmulas de MYCIN y el
-   resultado se mapea a un nivel: **NULO / VIGILANCIA / ALERTA / CRÍTICA**.
-4. El sistema imprime la **traza de la inferencia** (qué reglas se
-   dispararon y con qué CF), que es la justificación legible del dictamen.
-
-## Para la defensa
-
-- La **traza regla por regla** demuestra que es un sistema experto y no un
-  clasificador opaco: se puede explicar *por qué* dictaminó cada nivel.
-- La **regla R9** (huerto en parte baja / cañada) es conocimiento experto
-  **local** que ninguna API contiene: es el valor diferencial del sistema.
-- La **línea de tiempo horaria** muestra el riesgo escalando de NULO a
-  CRÍTICA conforme el cielo se despeja y el viento amaina.
-
-## Extensiones posibles (fuera del alcance de la PoC)
-
-- Habilitar la ruta `api` real en `adaptador_smn.cargar_desde_api`.
-- Añadir un componente de ML ligero que prediga la mínima nocturna y un
-  lazo de meta-nivel (MAPE-K) que ajuste los CF según falsos positivos —
-  esto ya sería material de tesis, no de PoC.
+Es exactamente el mismo sistema experto: las 13 reglas, los factores de
+certeza y la fórmula de Magnus son idénticos a los de la versión Python de
+la carpeta superior. Se verificó que ambas producen el mismo dictamen para
+la noche de ejemplo (CRÍTICA, pico a las 03:00, CF +0.99).
