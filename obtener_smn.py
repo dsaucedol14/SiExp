@@ -27,15 +27,22 @@ MUNICIPIO = "Huauchinango"
 
 
 def descargar(url):
-    """Descarga y descomprime; tolera respuesta gzip o JSON directo."""
+    """Descarga y descomprime; el SMN entrega JSON en Latin-1 (ISO-8859-1)."""
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     crudo = urllib.request.urlopen(req, timeout=60).read()
-    # Intenta descomprimir; si no es gzip, úsalo tal cual
-    try:
-        texto = gzip.decompress(crudo).decode("utf-8")
-    except (OSError, gzip.BadGzipFile):
-        texto = crudo.decode("utf-8")
-    return json.loads(texto)
+
+    # ¿viene comprimido con gzip? Se detecta por los bytes mágicos 1F 8B
+    if crudo[:2] == b"\x1f\x8b":
+        crudo = gzip.decompress(crudo)
+
+    # El SMN usa Latin-1, no UTF-8. Probamos UTF-8 y caemos a Latin-1.
+    for enc in ("utf-8", "latin-1"):
+        try:
+            return json.loads(crudo.decode(enc))
+        except UnicodeDecodeError:
+            continue
+    # Último recurso: nunca falla, reemplaza bytes problemáticos
+    return json.loads(crudo.decode("latin-1", errors="replace"))
 
 
 def main():
