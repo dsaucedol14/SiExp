@@ -65,6 +65,36 @@ def descargar(url):
     return json.loads(texto)
 
 
+def nubosidad_desde_cielo(desc):
+    """Traduce la descripción textual del cielo del SMN a un % de nubosidad.
+    (El servicio por hora no da nubosidad numérica, solo texto en 'desciel'.)"""
+    d = str(desc).lower()
+    if "cubierto" in d:               return 100
+    if "mayormente nublado" in d:     return 80
+    if "medio nublado" in d or "parcial" in d:            return 50
+    if "intervalos" in d or "dispersas" in d or "poco nublado" in d:  return 30
+    if "mayormente despejado" in d:   return 15
+    if "nublado" in d:                return 90   # 'nublado' a secas
+    if "despejado" in d:              return 5
+    return 40   # descripción no reconocida: valor intermedio prudente
+
+
+def hora_desde_hloc(hloc):
+    """Extrae la hora (0-23) de una marca tipo '20260708T18'. Devuelve (fecha, hora)."""
+    s = str(hloc)
+    if "T" in s:
+        fecha, hh = s.split("T", 1)
+        try:
+            return fecha, int(hh[:2])
+        except ValueError:
+            return fecha, 0
+    # por si viniera solo la hora
+    try:
+        return "", int(s)
+    except ValueError:
+        return "", 0
+
+
 def main():
     if "PEGA_AQUI" in URL:
         print("Falta pegar el enlace del SMN en la variable URL (arriba).")
@@ -87,14 +117,36 @@ def main():
         print("Revisa el nombre exacto en el campo 'nmun' de la lista de arriba.")
         return
 
+    # Transforma cada registro del SMN al formato que consume la app:
+    #   hloc (hora 0-23), temp, hr, velvien, cc (nubosidad numérica), dloc, td
+    convertidos = []
+    for r in reg:
+        fecha, hora = hora_desde_hloc(r.get("hloc", ""))
+        convertidos.append({
+            "dloc": fecha,
+            "hloc": hora,                                  # hora entera
+            "temp": r.get("temp", ""),
+            "hr": r.get("hr", ""),
+            "velvien": r.get("velvien", ""),
+            "cc": nubosidad_desde_cielo(r.get("desciel", "")),  # de texto a %
+            "cielo": r.get("desciel", ""),                 # se conserva por claridad
+            "dpt": r.get("dpt", ""),                       # punto de rocío del SMN
+        })
+
     # Ordena por fecha y hora
-    reg.sort(key=lambda r: (str(r.get("dloc", "")), int(r.get("hloc", 0))))
+    convertidos.sort(key=lambda r: (str(r["dloc"]), r["hloc"]))
 
-    salida = json.dumps(reg, ensure_ascii=False, indent=2)
+    salida = json.dumps(convertidos, ensure_ascii=False, indent=2)
     with open("noche_smn.json", "w", encoding="utf-8") as f:
-        f.write(json.dumps(reg, ensure_ascii=False))
+        f.write(json.dumps(convertidos, ensure_ascii=False))
 
-    print(f"{len(reg)} registros de {MUNICIPIO} guardados en noche_smn.json\n")
+    print(f"{len(convertidos)} registros de {MUNICIPIO} guardados en noche_smn.json")
+    # Muestra qué descripciones de cielo aparecieron y cómo se tradujeron
+    vistos = sorted(set(r["cielo"] for r in convertidos))
+    print("Descripciones de cielo encontradas (revisa el mapeo si hace falta):")
+    for c in vistos:
+        print(f"   '{c}'  ->  nubosidad {nubosidad_desde_cielo(c)} %")
+    print()
     print(salida)
 
 
