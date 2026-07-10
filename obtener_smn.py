@@ -36,13 +36,33 @@ def descargar(url):
         crudo = gzip.decompress(crudo)
 
     # El SMN usa Latin-1, no UTF-8. Probamos UTF-8 y caemos a Latin-1.
+    texto = None
     for enc in ("utf-8", "latin-1"):
         try:
-            return json.loads(crudo.decode(enc))
+            texto = crudo.decode(enc)
+            break
         except UnicodeDecodeError:
             continue
-    # Último recurso: nunca falla, reemplaza bytes problemáticos
-    return json.loads(crudo.decode("latin-1", errors="replace"))
+    if texto is None:
+        texto = crudo.decode("latin-1", errors="replace")
+
+    texto = texto.strip()
+
+    # Validar que de verdad sea JSON (debe empezar con [ o {)
+    if not texto[:1] in "[{":
+        raise SystemExit(
+            "\n*** El enlace NO devolvió JSON. ***\n"
+            "Primeros caracteres de lo que se descargó:\n"
+            "---------------------------------------------\n"
+            f"{texto[:300]}\n"
+            "---------------------------------------------\n"
+            "Si ves código HTML (<!DOCTYPE>, <html>...), copiaste la URL de la\n"
+            "PÁGINA, no el enlace de descarga. En la página del SMN, haz CLIC\n"
+            "DERECHO sobre el enlace del servicio POR HORA y elige 'Copiar\n"
+            "dirección del enlace'. Ese es el que va en la variable URL.\n"
+        )
+
+    return json.loads(texto)
 
 
 def main():
