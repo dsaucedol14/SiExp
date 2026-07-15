@@ -60,4 +60,31 @@ REGLAS = [
           lambda h: h["temp"] >= 12, -0.50),
     Regla("R13", "Punto de rocio alto (>= +5 C)",
           lambda h: h["td"] >= 5, -0.55),
+
+    # ===== Reglas extendidas (R14-R20): aprovechan telemetria adicional =====
+    # Usan h.get(...) para no fallar cuando el dato no esta disponible
+    # (p. ej. entrada manual); si el hecho falta, la regla no se dispara.
+
+    # --- Nodo A (piso termico): reglas adicionales ---
+    Regla("R16", "Margen T-Td <= 2 C al atardecer (18-20 h): fuerte indicador radiativo",
+          lambda h: h["hora"] in (18, 19, 20) and (h["temp"] - h["td"]) <= 2, +0.50),
+    Regla("R20", "Saturacion con punto de rocio bajo cero (HR >= 90% y Td <= 0)",
+          lambda h: h["hr"] >= 90 and h["td"] <= 0, +0.30),
+
+    # --- Nodo C (contexto temporal): reglas adicionales ---
+    Regla("R17", "Temporada de heladas (mes nov-feb): factor de fondo",
+          lambda h: h.get("mes") in (11, 12, 1, 2), +0.10),
+    Regla("R18", "Enfriamiento rapido con aire ya frio (descenso >= 2 C y temp <= 6 C)",
+          lambda h: h.get("delta_t") is not None and h["delta_t"] <= -2 and h["temp"] <= 6, +0.40),
+
+    # --- Nodo D (contexto local): advección fria ---
+    Regla("R19", "Viento del cuadrante norte (adveccion de aire frio)",
+          lambda h: h.get("dir_viento") is not None
+                    and (h["dir_viento"] >= 315 or h["dir_viento"] <= 45), +0.25),
+
+    # --- Nodo E (bloqueadores): reglas adicionales ---
+    Regla("R14", "Probabilidad de precipitacion alta (>= 60%)",
+          lambda h: h.get("prob_prec") is not None and h["prob_prec"] >= 60, -0.55),
+    Regla("R15", "Rafagas fuertes (>= 20 km/h): mezcla la capa de aire",
+          lambda h: h.get("rafaga") is not None and h["rafaga"] >= 20, -0.45),
 ]
