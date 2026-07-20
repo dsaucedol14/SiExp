@@ -55,12 +55,13 @@ def imprimir_reporte(resultados: list):
 
     # --- Linea de tiempo horaria ---
     print("\n Evolucion del riesgo durante la noche:\n")
-    print(f" {'Hora':>4} | {'T':>5} | {'Td':>5} | {'Nub%':>4} | "
+    print(f" {'Fecha':>8} | {'Hora':>4} | {'T':>5} | {'Td':>5} | {'Nub%':>4} | "
           f"{'Vnto':>4} | {'CF':>6} | Nivel")
-    print(" " + "-" * 62)
+    print(" " + "-" * 73)
     for r in resultados:
         h = r["hechos"]
-        print(f" {h['hora']:>02}:00 | {h['temp']:>5.1f} | {h['td']:>5.1f} | "
+        print(f" {smn.fecha_corta(h.get('fecha','')):>8} | {h['hora']:>02}:00 | "
+              f"{h['temp']:>5.1f} | {h['td']:>5.1f} | "
               f"{h['nubosidad']:>4.0f} | {h['viento']:>4.0f} | "
               f"{r['cf']:>+6.2f} | {r['nivel']}")
 
@@ -69,7 +70,8 @@ def imprimir_reporte(resultados: list):
     hp = pico["hechos"]
     print("\n" + "-" * 70)
     print(f" DICTAMEN DE LA NOCHE: {pico['nivel']}  (CF = {pico['cf']:+.2f})")
-    print(f" Momento de mayor riesgo: {hp['hora']:02d}:00 h")
+    print(f" Momento de mayor riesgo: {smn.fecha_corta(hp.get('fecha',''))} "
+          f"{hp['hora']:02d}:00 h")
     print(f" Accion recomendada: {pico['accion']}")
     print("\n Justificacion de la inferencia (regla por regla):")
     print(explicar(pico["cf"], pico["disparadas"]))
@@ -133,9 +135,16 @@ def main():
 
     if args.html and not args.sin_html:
         import reporte_html
+        fechas = [h["fecha"] for h in hechos if h.get("fecha")]
+        if fechas:
+            f_ini, f_fin = fechas[0], fechas[-1]
+            fecha_meta = (smn.fecha_larga(f_ini) if f_ini == f_fin else
+                          f"{smn.fecha_larga(f_ini)} al {smn.fecha_larga(f_fin)}")
+        else:
+            fecha_meta = ""
         meta = {
             "municipio": "Huauchinango, Puebla",
-            "fecha": hechos[0].get("_fecha", "") if hechos else "",
+            "fecha": fecha_meta,
             "parte_baja": args.parte_baja,
         }
         ruta = reporte_html.generar_reporte(resultados, meta, args.html, explicar)

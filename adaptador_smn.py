@@ -22,6 +22,7 @@ ajusta solo el diccionario MAPEO_CAMPOS.
 
 import json
 import math
+import re
 
 # Nombres tipicos de campo en el JSON del SMN -> nombre interno.
 # Ajusta la parte derecha si tu descarga real usa otras claves.
@@ -32,6 +33,40 @@ MAPEO_CAMPOS = {
     "cc": "nubosidad",     # cobertura de nubes (%)
     "hloc": "hora",        # hora local (hh)
 }
+
+_MESES_CORTO = ["", "ene", "feb", "mar", "abr", "may", "jun",
+                "jul", "ago", "sep", "oct", "nov", "dic"]
+_MESES_LARGO = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio",
+                "julio", "agosto", "septiembre", "octubre", "noviembre",
+                "diciembre"]
+
+
+def _normalizar_fecha(dloc) -> str:
+    """Normaliza 'dloc' del SMN a 'YYYY-MM-DD'. El servicio POR HORA en
+    vivo lo entrega pegado ('20260718'); el JSON de ejemplo ya trae
+    guiones ('2025-12-10'). Devuelve '' si no hay dato."""
+    s = str(dloc).strip()
+    if re.fullmatch(r"\d{8}", s):
+        return f"{s[0:4]}-{s[4:6]}-{s[6:8]}"
+    return s
+
+
+def fecha_corta(fecha_iso: str) -> str:
+    """'YYYY-MM-DD' -> 'DD-mmm' (p. ej. '10-dic'). Para tablas y ejes."""
+    try:
+        anio, mes, dia = fecha_iso.split("-")
+        return f"{int(dia):02d}-{_MESES_CORTO[int(mes)]}"
+    except (ValueError, IndexError, AttributeError):
+        return fecha_iso or ""
+
+
+def fecha_larga(fecha_iso: str) -> str:
+    """'YYYY-MM-DD' -> 'DD de mes de YYYY'. Para encabezados."""
+    try:
+        anio, mes, dia = fecha_iso.split("-")
+        return f"{int(dia)} de {_MESES_LARGO[int(mes)]} de {anio}"
+    except (ValueError, IndexError, AttributeError):
+        return fecha_iso or ""
 
 
 def punto_de_rocio(temp: float, hr: float) -> float:
@@ -64,6 +99,7 @@ def normalizar_registro(reg_smn: dict, parte_baja: bool = False) -> dict:
     hechos["hora"] = int(hechos["hora"])
     hechos["td"] = round(punto_de_rocio(hechos["temp"], hechos["hr"]), 1)
     hechos["parte_baja"] = parte_baja
+    hechos["fecha"] = _normalizar_fecha(reg_smn.get("dloc", ""))
     return hechos
 
 

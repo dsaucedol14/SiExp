@@ -8,6 +8,8 @@ del sistema experto. Pensado para abrir en el navegador durante la defensa.
 
 from html import escape
 
+from adaptador_smn import fecha_corta
+
 # Paleta por nivel de alerta
 COLORES = {
     "CRITICA":    "#c0392b",
@@ -29,6 +31,25 @@ def _escala(valor, v_min, v_max, px_min, px_max):
         return (px_min + px_max) / 2
     frac = (valor - v_min) / (v_max - v_min)
     return px_min + frac * (px_max - px_min)
+
+
+def _fronteras_dia(resultados):
+    """Indices donde empieza un dia distinto al anterior (incluye el 0)."""
+    fronteras = []
+    anterior = None
+    for i, r in enumerate(resultados):
+        f = r["hechos"].get("fecha", "")
+        if f != anterior:
+            fronteras.append(i)
+            anterior = f
+    return fronteras
+
+
+def _paso_etiquetas(n):
+    """Cada cuantos puntos mostrar la etiqueta de hora en el eje X, para
+    que no se amontonen cuando el reporte cubre varios dias (muchos
+    puntos)."""
+    return max(1, -(-n // 24))  # techo(n / 24): como mucho ~24 etiquetas
 
 
 def _grafica_temperatura(resultados):
@@ -77,8 +98,23 @@ def _grafica_temperatura(resultados):
         partes.append(f'<text x="{x1-4}" y="{y_cero-5:.1f}" text-anchor="end" '
                       f'font-size="10" fill="#c0392b">0 C</text>')
 
-    # Etiquetas del eje X (horas)
+    # Fronteras de dia: linea vertical + etiqueta de fecha
+    fronteras = _fronteras_dia(resultados)
+    for i in fronteras:
+        x = px(i)
+        if i > 0:
+            partes.append(f'<line x1="{x:.1f}" y1="{y0}" x2="{x:.1f}" y2="{y1}" '
+                          f'stroke="#bbb" stroke-width="1" stroke-dasharray="2 3"/>')
+        partes.append(f'<text x="{x:.1f}" y="{H-mb+31}" text-anchor="middle" '
+                      f'font-size="10" font-weight="600" fill="#555">'
+                      f'{fecha_corta(resultados[i]["hechos"].get("fecha",""))}</text>')
+
+    # Etiquetas del eje X (horas): se omiten cuando coinciden con una
+    # etiqueta de fecha para no encimarse, y se espacian si hay muchos dias
+    paso_etq = _paso_etiquetas(n)
     for i, h in enumerate(horas):
+        if i in fronteras or i % paso_etq != 0:
+            continue
         partes.append(f'<text x="{px(i):.1f}" y="{H-mb+18}" '
                       f'text-anchor="middle" font-size="10" fill="#888">'
                       f'{h:02d}</text>')
@@ -142,18 +178,32 @@ def _grafica_riesgo(resultados):
 
     ancho_barra = (x1 - x0) / n * 0.7
     y_base = py(0)
+    fronteras = _fronteras_dia(resultados)
+    paso_etq = _paso_etiquetas(n)
     for i, r in enumerate(resultados):
         cf = cfs[i]
         color = COLORES[r["nivel"]]
         y_top = py(max(cf, 0)) if cf >= 0 else y_base
         alto = abs(py(cf) - y_base)
         cx = px(i)
+        fecha_tt = fecha_corta(r["hechos"].get("fecha", ""))
         partes.append(f'<rect x="{cx-ancho_barra/2:.1f}" y="{y_top:.1f}" '
                       f'width="{ancho_barra:.1f}" height="{alto:.1f}" '
                       f'fill="{color}" opacity="0.9"><title>'
-                      f'{horas[i]:02d}:00 CF={cf:+.2f} {r["nivel"]}</title></rect>')
-        partes.append(f'<text x="{cx:.1f}" y="{H-mb+18}" text-anchor="middle" '
-                      f'font-size="10" fill="#888">{horas[i]:02d}</text>')
+                      f'{fecha_tt} {horas[i]:02d}:00 CF={cf:+.2f} '
+                      f'{r["nivel"]}</title></rect>')
+        if i in fronteras:
+            if i > 0:
+                partes.append(f'<line x1="{cx:.1f}" y1="{y0}" x2="{cx:.1f}" '
+                              f'y2="{y1}" stroke="#bbb" stroke-width="1" '
+                              f'stroke-dasharray="2 3"/>')
+            partes.append(f'<text x="{cx:.1f}" y="{H-mb+31}" '
+                          f'text-anchor="middle" font-size="10" '
+                          f'font-weight="600" fill="#555">{fecha_tt}</text>')
+        elif i % paso_etq == 0:
+            partes.append(f'<text x="{cx:.1f}" y="{H-mb+18}" '
+                          f'text-anchor="middle" font-size="10" '
+                          f'fill="#888">{horas[i]:02d}</text>')
 
     partes.append(f'<line x1="{x0}" y1="{y_base:.1f}" x2="{x1}" '
                   f'y2="{y_base:.1f}" stroke="#333" stroke-width="1"/>')
@@ -178,6 +228,7 @@ def generar_reporte(resultados, meta, ruta_salida, explicar_fn):
         tc = COLOR_TEXTO_NIVEL[r["nivel"]]
         filas.append(
             f'<tr>'
+            f'<td>{fecha_corta(h.get("fecha",""))}</td>'
             f'<td>{h["hora"]:02d}:00</td>'
             f'<td>{h["temp"]:.1f}</td>'
             f'<td>{h["td"]:.1f}</td>'
@@ -201,6 +252,9 @@ def generar_reporte(resultados, meta, ruta_salida, explicar_fn):
 
     parte_baja_txt = ("Si (zona de drenaje de aire frio)"
                       if meta.get("parte_baja") else "No")
+    fecha_meta = meta.get("fecha", "")
+    etiqueta_fecha = "Periodo del" if " al " in fecha_meta else "Noche del"
+    fecha_pico = fecha_corta(hp.get("fecha", ""))
 
     html = f"""<!DOCTYPE html>
 <html lang="es">
@@ -245,14 +299,14 @@ def generar_reporte(resultados, meta, ruta_salida, explicar_fn):
   <header>
     <h1>Sistema Experto de Alerta de Heladas Radiativas</h1>
     <p>Produccion de manzana &middot; {escape(meta.get('municipio','Sierra Norte de Puebla'))}
-       &middot; Noche del {escape(meta.get('fecha',''))}
+       &middot; {etiqueta_fecha} {escape(fecha_meta)}
        &middot; Metodo: factores de certeza (MYCIN)</p>
   </header>
 
   <div class="veredicto">
     <div>
       <div class="nivel">{pico['nivel']}</div>
-      <div class="cf">CF = {pico['cf']:+.2f} &middot; mayor riesgo a las {hp['hora']:02d}:00 h</div>
+      <div class="cf">CF = {pico['cf']:+.2f} &middot; mayor riesgo el {fecha_pico} a las {hp['hora']:02d}:00 h</div>
     </div>
     <div class="accion"><strong>Accion:</strong> {escape(pico['accion'])}</div>
   </div>
@@ -274,7 +328,7 @@ def generar_reporte(resultados, meta, ruta_salida, explicar_fn):
     <h2>Detalle horario</h2>
     <table>
       <thead><tr>
-        <th>Hora</th><th>T (C)</th><th>Td (C)</th><th>Nubes</th>
+        <th>Fecha</th><th>Hora</th><th>T (C)</th><th>Td (C)</th><th>Nubes</th>
         <th>Viento km/h</th><th>CF</th><th>Nivel</th>
       </tr></thead>
       <tbody>
@@ -284,7 +338,7 @@ def generar_reporte(resultados, meta, ruta_salida, explicar_fn):
   </div>
 
   <div class="tarjeta">
-    <h2>Justificacion de la inferencia &mdash; momento de mayor riesgo ({hp['hora']:02d}:00 h)</h2>
+    <h2>Justificacion de la inferencia &mdash; momento de mayor riesgo ({fecha_pico} {hp['hora']:02d}:00 h)</h2>
     <ul>
 {justificacion}
     </ul>
