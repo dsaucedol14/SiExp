@@ -33,9 +33,8 @@ def explicar(cf: float, disparadas: list) -> str:
     return "\n".join(lineas) if lineas else "      (ninguna regla se disparo)"
 
 
-def procesar_noche(hechos_por_hora: list) -> list:
+def procesar_noche(hechos_por_hora: list, motor) -> list:
     """Corre el motor hora por hora y devuelve los resultados."""
-    motor = MotorInferencia(REGLAS)
     resultados = []
     for h in hechos_por_hora:
         cf, disparadas = motor.inferir(h)
@@ -47,10 +46,10 @@ def procesar_noche(hechos_por_hora: list) -> list:
     return resultados
 
 
-def imprimir_reporte(resultados: list):
+def imprimir_reporte(resultados: list, nombre_motor: str = "factores de certeza (MYCIN)"):
     print("\n" + "=" * 70)
     print(" SISTEMA EXPERTO DE ALERTA DE HELADAS - Sierra Norte de Puebla")
-    print(" Manzana | Metodo: factores de certeza (MYCIN)")
+    print(f" Manzana | Metodo: {nombre_motor}")
     print("=" * 70)
 
     # --- Linea de tiempo horaria ---
@@ -96,6 +95,10 @@ def main():
                     help="clave de municipio del SMN (fuente=api)")
     ap.add_argument("--parte-baja", action="store_true",
                     help="el huerto esta en zona de drenaje de aire frio (R9)")
+    ap.add_argument("--motor", choices=["cf", "clips"], default="cf",
+                    help="ambos motores (cf y clips) se ejecutan y se "
+                         "muestran en consola; este flag solo elige cual "
+                         "alimenta el reporte HTML (por defecto: cf)")
     ap.add_argument("--html", nargs="?", const="reporte_heladas.html",
                     default="reporte_heladas.html",
                     help="ruta de salida del reporte HTML, que se genera "
@@ -130,8 +133,20 @@ def main():
         print("No se obtuvieron registros meteorologicos.")
         return
 
-    resultados = procesar_noche(hechos)
-    imprimir_reporte(resultados)
+    resultados_cf = procesar_noche(hechos, MotorInferencia(REGLAS))
+    imprimir_reporte(resultados_cf, "factores de certeza (MYCIN)")
+
+    resultados_clips = None
+    try:
+        from motor_clips import MotorInferenciaCLIPS
+        resultados_clips = procesar_noche(hechos, MotorInferenciaCLIPS(REGLAS))
+        imprimir_reporte(resultados_clips, "factores de certeza (motor CLIPS)")
+    except ImportError:
+        print("\n[Aviso] clipspy no esta instalado; se omite el motor CLIPS "
+              "(pip install clipspy).\n")
+
+    # El motor seleccionado con --motor es el que alimenta el reporte HTML.
+    resultados = resultados_clips if args.motor == "clips" and resultados_clips else resultados_cf
 
     if args.html and not args.sin_html:
         import reporte_html
