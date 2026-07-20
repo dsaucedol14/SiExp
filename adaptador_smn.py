@@ -67,6 +67,11 @@ def normalizar_registro(reg_smn: dict, parte_baja: bool = False) -> dict:
     return hechos
 
 
+def normalizar_lista(registros: list, parte_baja: bool = False) -> list:
+    """Normaliza una lista de registros crudos del SMN a hechos internos."""
+    return [normalizar_registro(r, parte_baja) for r in registros]
+
+
 def cargar_desde_archivo(ruta: str, parte_baja: bool = False) -> list:
     """
     Lee un JSON del SMN cacheado en disco (lista de registros horarios)
@@ -77,7 +82,20 @@ def cargar_desde_archivo(ruta: str, parte_baja: bool = False) -> list:
 
     # El SMN suele devolver una lista de registros horarios.
     registros = crudo if isinstance(crudo, list) else crudo.get("data", [])
-    return [normalizar_registro(r, parte_baja) for r in registros]
+    return normalizar_lista(registros, parte_baja)
+
+
+def cargar_desde_smn(parte_baja: bool = False) -> list:
+    """
+    Descarga en vivo el pronostico POR HORA del SMN (via obtener_smn.py)
+    y devuelve los hechos normalizados, uno por hora. Ademas cachea la
+    respuesta cruda en noche_smn.json por si luego se quiere reprocesar
+    sin conexion con --fuente archivo.
+    """
+    import obtener_smn
+    registros = obtener_smn.obtener_datos()
+    obtener_smn.guardar(registros)
+    return normalizar_lista(registros, parte_baja)
 
 
 def cargar_desde_api(idmun: str, parte_baja: bool = False) -> list:

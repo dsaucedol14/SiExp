@@ -20,7 +20,7 @@ import json
 import io
 
 # --- Pega aquí el enlace del servicio POR HORA que copiaste del SMN ---
-URL = "PEGA_AQUI_EL_ENLACE_POR_HORA_DEL_SMN"
+URL = "https://smn.conagua.gob.mx/tools/GUI/webservices/index.php?method=3"
 
 # Municipio a extraer (por nombre; no necesitas saber la clave)
 MUNICIPIO = "Huauchinango"
@@ -95,27 +95,33 @@ def hora_desde_hloc(hloc):
         return "", 0
 
 
-def main():
+def obtener_datos(municipio: str = MUNICIPIO, verbose: bool = False) -> list:
+    """
+    Descarga el pronostico POR HORA del SMN y devuelve los registros del
+    municipio pedido, ya convertidos al formato que consume la app
+    (hloc, temp, hr, velvien, cc, cielo, dpt). Pensada para usarse tanto
+    desde este script como importada desde otro modulo (p. ej. main.py).
+    """
     if "PEGA_AQUI" in URL:
-        print("Falta pegar el enlace del SMN en la variable URL (arriba).")
-        return
+        raise RuntimeError(
+            "Falta pegar el enlace del SMN en la variable URL (arriba).")
 
     data = descargar(URL)
     if not isinstance(data, list):
         data = data.get("data", [])
 
     # Muestra los campos disponibles del primer registro (por si cambian nombres)
-    if data:
+    if verbose and data:
         print("Campos que devuelve el SMN:", list(data[0].keys()), "\n")
 
     # Filtra por nombre de municipio (sin distinguir mayúsculas/acentos básicos)
-    obj = MUNICIPIO.strip().lower()
+    obj = municipio.strip().lower()
     reg = [r for r in data if str(r.get("nmun", "")).strip().lower() == obj]
 
     if not reg:
-        print(f"No se encontraron registros de '{MUNICIPIO}'.")
-        print("Revisa el nombre exacto en el campo 'nmun' de la lista de arriba.")
-        return
+        raise RuntimeError(
+            f"No se encontraron registros de '{municipio}' en la respuesta "
+            "del SMN. Revisa el nombre exacto en el campo 'nmun'.")
 
     # Transforma cada registro del SMN al formato que consume la app:
     #   hloc (hora 0-23), temp, hr, velvien, cc (nubosidad numérica), dloc, td
@@ -135,11 +141,24 @@ def main():
 
     # Ordena por fecha y hora
     convertidos.sort(key=lambda r: (str(r["dloc"]), r["hloc"]))
+    return convertidos
 
-    salida = json.dumps(convertidos, ensure_ascii=False, indent=2)
-    with open("noche_smn.json", "w", encoding="utf-8") as f:
+
+def guardar(convertidos: list, ruta: str = "noche_smn.json"):
+    """Cachea en disco los registros descargados, por si se necesita
+    reprocesar sin conexion (--fuente archivo --datos noche_smn.json)."""
+    with open(ruta, "w", encoding="utf-8") as f:
         f.write(json.dumps(convertidos, ensure_ascii=False))
 
+
+def main():
+    try:
+        convertidos = obtener_datos(verbose=True)
+    except RuntimeError as e:
+        print(e)
+        return
+
+    guardar(convertidos)
     print(f"{len(convertidos)} registros de {MUNICIPIO} guardados en noche_smn.json")
     # Muestra qué descripciones de cielo aparecieron y cómo se tradujeron
     vistos = sorted(set(r["cielo"] for r in convertidos))
@@ -147,7 +166,7 @@ def main():
     for c in vistos:
         print(f"   '{c}'  ->  nubosidad {nubosidad_desde_cielo(c)} %")
     print()
-    print(salida)
+    print(json.dumps(convertidos, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

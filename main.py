@@ -8,8 +8,10 @@ Orquesta: adaptador SMN  ->  motor de inferencia (factores de certeza)
           ->  clasificacion  ->  traza de explicacion.
 
 Uso:
-    python main.py --fuente archivo --datos datos/noche_helada.json --parte-baja
+    python main.py                    (descarga en vivo del SMN, genera reporte_heladas.html)
+    python main.py --fuente archivo --datos noche_helada.json --parte-baja
     python main.py --fuente api --idmun 21071        (deshabilitado en la PoC)
+    python main.py --sin-html                        (omite la generacion del HTML)
 """
 
 import argparse
@@ -83,21 +85,28 @@ def imprimir_reporte(resultados: list):
 def main():
     ap = argparse.ArgumentParser(
         description="Sistema experto de heladas (PoC) - factores de certeza")
-    ap.add_argument("--fuente", choices=["archivo", "api"], default="archivo",
-                    help="origen de los datos meteorologicos")
-    ap.add_argument("--datos", default="datos/noche_helada.json",
+    ap.add_argument("--fuente", choices=["smn", "archivo", "api"], default="smn",
+                    help="origen de los datos meteorologicos "
+                         "(smn = descarga en vivo del SMN, por defecto)")
+    ap.add_argument("--datos", default="noche_helada.json",
                     help="ruta del JSON del SMN cacheado (fuente=archivo)")
     ap.add_argument("--idmun", default=None,
                     help="clave de municipio del SMN (fuente=api)")
     ap.add_argument("--parte-baja", action="store_true",
                     help="el huerto esta en zona de drenaje de aire frio (R9)")
     ap.add_argument("--html", nargs="?", const="reporte_heladas.html",
-                    default=None,
-                    help="genera un reporte HTML (opcional: ruta de salida)")
+                    default="reporte_heladas.html",
+                    help="ruta de salida del reporte HTML, que se genera "
+                         "siempre (por defecto: reporte_heladas.html); "
+                         "usa --sin-html para omitirlo")
+    ap.add_argument("--sin-html", action="store_true",
+                    help="no genera el reporte HTML")
     args = ap.parse_args()
 
     try:
-        if args.fuente == "archivo":
+        if args.fuente == "smn":
+            hechos = smn.cargar_desde_smn(args.parte_baja)
+        elif args.fuente == "archivo":
             hechos = smn.cargar_desde_archivo(args.datos, args.parte_baja)
         else:
             hechos = smn.cargar_desde_api(args.idmun, args.parte_baja)
@@ -107,6 +116,13 @@ def main():
     except NotImplementedError as e:
         print(f"\n[Aviso] {e}\n")
         return
+    except RuntimeError as e:
+        print(f"\n[Error al descargar datos del SMN] {e}\n")
+        return
+    except Exception as e:
+        print(f"\n[Error al descargar datos del SMN] {e}\n"
+              "Revisa tu conexion o usa --fuente archivo con un JSON cacheado.\n")
+        return
 
     if not hechos:
         print("No se obtuvieron registros meteorologicos.")
@@ -115,7 +131,7 @@ def main():
     resultados = procesar_noche(hechos)
     imprimir_reporte(resultados)
 
-    if args.html:
+    if args.html and not args.sin_html:
         import reporte_html
         meta = {
             "municipio": "Huauchinango, Puebla",
