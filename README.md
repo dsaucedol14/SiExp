@@ -1,5 +1,41 @@
 # Vela — App móvil de alerta de heladas (PWA)
 
+![Python](https://img.shields.io/badge/python-3.8%2B-3776AB?logo=python&logoColor=white)
+![JavaScript](https://img.shields.io/badge/javascript-ES6-F7DF1E?logo=javascript&logoColor=black)
+![PWA](https://img.shields.io/badge/PWA-offline--first-5A0FC8?logo=pwa&logoColor=white)
+![CLIPS](https://img.shields.io/badge/motor%20alterno-CLIPS-6f42c1)
+![Estado](https://img.shields.io/badge/estado-PoC%20funcional-yellow)
+![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)
+
+## Resumen
+
+**Vela** es un sistema experto de alerta temprana de heladas radiativas
+para huertos de manzana en la Sierra Norte de Puebla. A partir de datos
+meteorológicos (temperatura, humedad, viento, nubosidad, punto de rocío)
+evalúa 20 reglas con factores de certeza estilo MYCIN y clasifica el
+riesgo de helada hora por hora. El proyecto tiene dos caras: una **PWA**
+(`index.html`) que corre 100 % en el navegador sin conexión, y una
+**versión de escritorio en Python** (`main.py`) con dos motores de
+inferencia intercambiables (uno propio y uno sobre CLIPS) que sirven de
+validación cruzada entre sí.
+
+## Tabla de contenido
+
+- [Resumen](#resumen)
+- [Qué incluye](#qué-incluye)
+- [Dos formas de usarla](#dos-formas-de-usarla)
+  - [1. Rápida (para probar y para la demo)](#1-rápida-para-probar-y-para-la-demo)
+  - [2. Como app instalable en el celular (PWA real)](#2-como-app-instalable-en-el-celular-pwa-real)
+- [Nota honesta sobre jalar datos del SMN en vivo](#nota-honesta-sobre-jalar-datos-del-smn-en-vivo)
+- [Relación con la versión de escritorio](#relación-con-la-versión-de-escritorio)
+- [Versión de escritorio (Python) — `main.py`](#versión-de-escritorio-python--mainpy)
+  - [Archivos](#archivos)
+  - [Instalación](#instalación)
+  - [Uso](#uso)
+  - [Las 20 reglas de la base de conocimiento](#las-20-reglas-de-la-base-de-conocimiento)
+- [Arquitectura](#arquitectura)
+- [Licencia](#licencia)
+
 Versión móvil del sistema experto, como **PWA** (Progressive Web App):
 un solo `index.html` autocontenido con toda la lógica de factores de
 certeza en JavaScript. No usa librerías, ni CDN, ni servidor: funciona
@@ -152,3 +188,32 @@ Las reglas R14-R20 usan telemetría opcional (probabilidad de precipitación,
 ráfaga, mes, delta de temperatura, dirección del viento); si el dato no
 está disponible, la regla simplemente no se dispara en ninguno de los dos
 motores.
+
+## Arquitectura
+
+```mermaid
+flowchart LR
+    SMN[("SMN\n(API / JSON cacheado)")] --> ADP[adaptador_smn.py\nobtener_smn.py]
+    ADP --> HECHOS[["Hechos por hora\n(dict)"]]
+    HECHOS --> CF[motor_cf.py\nmotor CF puro Python]
+    HECHOS --> CLIPS[motor_clips.py\nmotor CLIPS vía clipspy]
+    BC[base_conocimiento.py\n20 reglas] --> CF
+    BC --> CLIPS
+    CF --> CLI[main.py\nreporte de consola]
+    CLIPS --> CLI
+    CF --> HTML[reporte_html.py]
+    HTML --> REPORTE[reporte_heladas.html]
+
+    subgraph PWA["PWA independiente (offline)"]
+        UI[index.html] --> SW[sw.js]
+        UI --> MANIFEST[manifest.webmanifest]
+    end
+```
+
+La versión de escritorio (Python) y la PWA comparten la misma base de
+conocimiento y fórmulas, pero corren por separado: la PWA reimplementa la
+lógica en JavaScript para no depender de un backend.
+
+## Licencia
+
+Distribuido bajo licencia [MIT](LICENSE).
